@@ -1,0 +1,19 @@
+*.env
+application/logs/*
+vendor
+application/config/config.php
+application/config/constants_specifique.php
+application/config/database.php
+assets
+
+#-------------------------
+# IDE / Development Files
+#-------------------------
+
+# Jetbrains editors (PHPStorm, etc)
+.idea/
+*.iml
+
+# Sonarqube
+/.scannerwork/
+sonar-project.properties

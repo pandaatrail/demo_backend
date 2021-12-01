@@ -1,0 +1,57 @@
+version: '3'
+services:
+  nginx:
+    command: nginx -g 'daemon off;'
+    environment:
+    - NGINX_HOST=${NGINX_HOST}
+    hostname: ${NGINX_HOST}
+    image: nginx:alpine
+    labels:
+    - "traefik.enable=true"
+    - "traefik.http.routers.backend.entrypoints=web"
+    - "traefik.http.routers.backend.rule=Host(`${NGINX_HOST}`)"
+    - "traefik.http.routers.backend.service=backend"
+    - "traefik.http.services.backend.loadbalancer.server.port=80"
+    networks:
+    - endpoint
+    - demo_backend
+    volumes:
+    - "sharedfiles:/sharedfiles"
+    - "./:/app"
+    - "./default.conf.template:/etc/nginx/templates/default.conf.template"
+    working_dir: /app
+  php:
+    build:
+      context: .
+      dockerfile: php.dockerfile
+      labels:
+      - "traefik.enabled=false"
+    command: php-fpm -F
+    env_file: .env
+    extra_hosts:
+    # If you need to 
+    - "demo.localhost:${TRAEFIK_IP}"
+    expose:
+    - 9000
+    networks:
+    - endpoint
+    - requirements
+    - middle
+    volumes:
+    - "sharedfiles:/sharedfiles"
+    - "./:/app"
+    - "./www.conf:/usr/local/etc/php-fpm.d/www.conf"
+    - "./php.ini:/usr/local/etc/php/php.ini"
+    working_dir: /app
+networks:
+  endpoint:
+    external: true
+  demo_backend:
+    name: demo_backend
+  middle:
+    external: true
+  requirements:
+    external: true
+volumes:
+  sharedfiles:
+    external: true
